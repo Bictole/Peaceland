@@ -18,3 +18,16 @@ The business constraint described in the paragraph "Alert" is that of time. It i
 
 * Upon receiving the initial report from peacewatchers, the gateway must immediately send an alert to the peacemakers;
 * To allow peacewatchers to do their job as quickly as possible, they need to be able to fetch data about the individuals surrounding them at any time. It means that we need an AP datastorage to handle the data needed for day to day operations. Here, we chose to use Scylla, a column-oriented and fast database;
+
+### 3) What mistake(s) from Peaceland can explain the failed attempt?
+
+The biggest mistake is to have hired data scientists who have probably stored their data on `.csv` files in order to easen the training of their keras models on their Jupyter notebooks. Whereas they should have recruited data engineers instead.
+To be more specific, they should have hired Epita students like us earlier. That would have solved all of their problems.
+
+Jokes aside, here follows a list of mistakes they may have done:
+
+* using either an SQL, a centralized database, or a non-CP datastorage solution to make statistics and to store big volume of data;
+* not using streams to forward their data towards their databases;
+* using an interpreted language like Python or R for not only their Proof Of Concept, but also their real life solution;
+* forgetting about the peacewatchers' need of quickly fetching data, and thus not having set up an AP database with a list of each citizen's peace score.
+
