@@ -31,3 +31,21 @@ Jokes aside, here follows a list of mistakes they may have done:
 * using an interpreted language like Python or R for not only their Proof Of Concept, but also their real life solution;
 * forgetting about the peacewatchers' need of quickly fetching data, and thus not having set up an AP database with a list of each citizen's peace score.
 
+### 4) Peaceland has likely forgotten some technical information in the report sent by the drone. In the future, this information could help Peaceland make its peacewatchers much more efficient. Which information?
+
+Currently, peacewatchers have the responsibility of computing the peace score of their surrounding citizens. Therefore, they have to be capable of fetching the most up-to-date information at any given time. However, they may be improved in various manners by sending additional information in their reports, as well as by slightly modifying some of the information they are sending.
+
+First, it is possible that the communication channels that are established between a given peacewatcher and our servers are disturbed. In such an event, the servers may not receive all of the reports in order, nor instantly. To prevent any of such problems to happen, the peacewatchers should add a timestamp to their reports.
+
+Furthermore, there is a high probability that two citizens of Peaceland share the same name. It can thus be a problem for us to handle the collisions when updating peace scores. Thus, it would be useful for them not to send the name of a citizen, but rather a unique identifier.
+
+Moreover, in the current state of things, some unfortunate edge cases may occur. For instance, consider the following scenario:
+1. a citizen does a bad deed and has their peace score reduced to a value right above the alert threshold (`peacescore_at_t0 = THRESHOLD`);
+1. the citizen does a good deed, and their peace score should be updated positively. However, there is some delay for this to happen (`peacescore_at_t3 = THRESHOLD + ω`);
+1. at `t1`, another peacewatcher fetches the citizen's peace score (`peacescore_at_t1 = peacescore_at_t0 = THRESHOLD`), and the citizen performs a minor bad deed that is recorded. This other peacewatcher records that, computes a new peacescore (`peacescore_at_t2 = THRESHOLD - ع > 0 ,ع < ω`) that is below threshold;
+1. Because this peacescore is below the threshold, it induces an alert, which immediately calls the peacemakers. However the theoretical score of the citizen at `t2` should have been `theoretical_peacescore_at_t2 = THRESHOLD + ω - ع`, which is above the threshold;
+
+This scenario is one of many examples of bugs that could be induced by having peacewatchers send computed scores instead of delta values of scores *(i.e. the values of the modifications related to a citizen's deed)*. 
+
+The peacewatchers should thus send a list of a citizen's deeds, or the sum of the peacepoint value of these said deeds in each report rather than recomputing the peacescores every time.
+
