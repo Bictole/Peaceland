@@ -20,7 +20,7 @@ object Main extends App {
             r.nextInt,
             (r.nextDouble, r.nextDouble),
             List(Person(
-              (names.value(r.nextInt(size))),
+              (names.value(r.nextInt(size)) \ "name").as[String],
               r.nextDouble,
               r.nextString(20)
             ))
@@ -36,6 +36,5 @@ object Main extends App {
     val namesJson = Json.parse(namesRaw)
     //println(namesJson)
 
-    println(scala.reflect.ClassTag(namesJson.getClass))
-    //println(generateData(namesJson.as[JsArray]))
+    println(generateData(namesJson.as[JsArray]))
 }
