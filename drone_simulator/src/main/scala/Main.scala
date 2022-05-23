@@ -11,19 +11,22 @@ object Main extends App {
     val eventJsonString = Json.stringify(Json.toJson(event))
     println(eventJsonString)
 
-    println(generateData)
 
-
-    def generateData(): Event = {
+    def generateData(names: JsArray): Event = {
         val r = scala.util.Random
+        val size = names.value.size
         Event(
             LocalDateTime.now(),
             r.nextInt,
             (r.nextDouble, r.nextDouble),
-            List(Person(r.nextString(20), r.nextDouble, r.nextString(20)))
+            List(Person(
+              (names.value(r.nextInt(size))),
+              r.nextDouble,
+              r.nextString(20)
+            ))
         )
     }
-  
+
     val namesFileName = "src/main/resource/name.json"
     //val phrases = List("Hello", "Goodbye", "Help me!", "Mayday", "Scala is a plusgood language", "I come in peace! Don't shoot!")
 
@@ -32,4 +35,7 @@ object Main extends App {
     fSource.close()
     val namesJson = Json.parse(namesRaw)
     //println(namesJson)
+
+    println(scala.reflect.ClassTag(namesJson.getClass))
+    //println(generateData(namesJson.as[JsArray]))
 }
