@@ -26,7 +26,7 @@ version := "1.0"
 // You can define other libraries as dependencies in your build like this:
 
 libraryDependencies += "org.scala-lang.modules" %% "scala-parser-combinators" % "2.1.1"
-libraryDependencies += "com.typesafe.play" %% "play-json" % "2.4.8"
+libraryDependencies += "com.typesafe.play" %% "play-json" % "2.8.0"
 
 
 // Here, `libraryDependencies` is a set of dependencies, and by using `+=`,
