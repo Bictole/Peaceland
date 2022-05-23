@@ -8,4 +8,17 @@ object Main extends App {
   implicit val eventWrites = Json.format[Event]
   val eventJsonString = Json.stringify(Json.toJson(event))
   println(eventJsonString)
+
+    println(generateData)
+
+
+    def generateData(): Event = {
+        val r = scala.util.Random
+        Event(
+            LocalDateTime.now(),
+            r.nextInt,
+            (r.nextDouble, r.nextDouble),
+            List(Person(r.nextString(20), r.nextDouble, r.nextString(20)))
+        )
+    }
 }
