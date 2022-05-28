@@ -3,7 +3,7 @@ import java.time.LocalDateTime
 import scala.io.Source
 import scala.util.Random
 
-object Main extends App {
+object Main {
     val p = Person("Alexandre L", 20.3211, "Blablabla")
     val event = Event(LocalDateTime.now(), 4242, (23.04523, -11.03435), List(p))
     implicit val personWrites = Json.format[Person]
@@ -27,14 +27,16 @@ object Main extends App {
         )
     }
 
-    val namesFileName = "src/main/resource/name.json"
-    //val phrases = List("Hello", "Goodbye", "Help me!", "Mayday", "Scala is a plusgood language", "I come in peace! Don't shoot!")
+    def main(args: Array[String]): Unit = {
+        val namesFileName = "src/main/resource/name.json"
+        //val phrases = List("Hello", "Goodbye", "Help me!", "Mayday", "Scala is a plusgood language", "I come in peace! Don't shoot!")
 
-    val fSource = Source.fromFile(namesFileName)
-    val namesRaw = fSource.getLines.mkString
-    fSource.close()
-    val namesJson = Json.parse(namesRaw)
-    //println(namesJson)
+        val fSource = Source.fromFile(namesFileName)
+        val namesRaw = fSource.getLines.mkString
+        fSource.close()
+        val namesJson = Json.parse(namesRaw)
+        //println(namesJson)
 
-    println(generateData(namesJson.as[JsArray]))
+        println(generateData(namesJson.as[JsArray]))
+    }
 }
