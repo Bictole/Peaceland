@@ -4,8 +4,8 @@ import scala.io.Source
 import scala.util.Random
 
 object Main {
-    val p = Person("Alexandre L", 20.3211, "Blablabla")
-    val event = Event(LocalDateTime.now(), 4242, (23.04523, -11.03435), List(p))
+    val p = Person("Alexandre L", 20.3211)
+    val event = Event(LocalDateTime.now(), 4242, (23.04523, -11.03435), List("Blablabla"), List(p))
     implicit val personWrites = Json.format[Person]
     implicit val eventWrites = Json.format[Event]
     val eventJsonString = Json.stringify(Json.toJson(event))
@@ -19,10 +19,10 @@ object Main {
             LocalDateTime.now(),
             r.nextInt,
             (r.nextDouble, r.nextDouble),
+            List(r.nextString(20)),
             List(Person(
               (names.value(r.nextInt(size)) \ "name").as[String],
               r.nextDouble,
-              r.nextString(20)
             ))
         )
     }
