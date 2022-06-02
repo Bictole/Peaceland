@@ -32,7 +32,7 @@ object Main {
             )
             val eventJsonString = Json.stringify(Json.toJson(event))
             println(eventJsonString)
-            val record = new ProducerRecord[String, String]("peaceland", "event", eventJsonString)
+            val record = new ProducerRecord[String, String](Array("peaceland"), "event", eventJsonString)
             producer.send(record)
             Thread.sleep(1000)
         })
@@ -40,9 +40,8 @@ object Main {
     
     def main(args: Array[String]): Unit = {
         
-        val server = if(args.size == 1) args(0) else "localhost"
         val props = new Properties()
-        props.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, s"$server:9092")
+        props.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, "localhost:9092")
         props.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, classOf[StringSerializer])
         props.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, classOf[StringSerializer])
 
