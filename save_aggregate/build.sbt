@@ -15,5 +15,4 @@ libraryDependencies ++= Seq(
     "org.apache.hadoop" % "hadoop-mapreduce-client-core" % "3.1.2",
     "org.apache.hadoop" % "hadoop-aws" % "3.1.2",
     "org.apache.hadoop" % "hadoop-client" % "3.1.2",
-    "com.amazonaws" % "aws-java-sdk" % "1.3.32" 
 )

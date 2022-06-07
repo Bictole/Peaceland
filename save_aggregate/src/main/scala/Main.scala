@@ -16,7 +16,6 @@ import org.apache.spark.streaming.{Seconds, StreamingContext}*/
 
 object Main extends App {
   def putOnS3() = {
-    try{
 
       // find these info on IAM
       val accessKey = "AKIAS5I4RNJFG2HX6DUU"
@@ -40,20 +39,13 @@ object Main extends App {
       fSource.close()
       val df = spark.read.option("multiLine", true).json(filePath)
       df.show(false)
-      df.write.format("json").option("header", true).mode("Overwrite").save("s3a://peaceland-avem/test.json")
-      /**val content = spark.read
+      df.write.mode("Overwrite").json("s3a://peaceland-avem/test.json")
+      val content = spark.read
         .option("header", "true")
         .option("inferSchema", "true")
-        .csv(filePath)
+        .json("s3a://peaceland-avem/test.json")
 
-      */
-
-      //content.show(5, false)
-    } catch {
-      case ex1: FileNotFoundException => println("file not found")
-      case ex2: IOException => println("IO Exception")
-      case ex3: Exception => println("Not sure")
-    }
+      content.show(5, false)
   }
   
   putOnS3()
