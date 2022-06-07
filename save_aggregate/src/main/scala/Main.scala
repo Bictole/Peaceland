@@ -1,15 +1,18 @@
 package saveaggregate
 
 import play.api.libs.json._
+
 import java.io.FileNotFoundException
 import java.io.IOException
+import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter 
+
 import scala.io.Source
 
 import org.apache.kafka.common.serialization.StringDeserializer
 import org.apache.kafka.clients.consumer.ConsumerConfig
 
 import org.apache.spark.sql.{SparkSession, DataFrame, SaveMode, Row, SQLContext}
-import spark.implicits._
 
 import org.apache.spark.streaming.{Seconds, StreamingContext}
 import org.apache.spark.streaming.kafka010._
@@ -38,6 +41,8 @@ object Main extends App {
     val streamContext = new StreamingContext(sparkConf, Seconds(15))
     val sparkContext = streamContext.sparkContext
     val spark: SparkSession = SparkSession.builder.config(sparkContext.getConf).getOrCreate()
+
+    import spark.implicits._ //cursed AF
 
     spark.sparkContext.setLogLevel("ERROR")
 
@@ -79,15 +84,17 @@ object Main extends App {
       })
       .map(event => List.fill(1)(event))
       .reduce((a, b) => a ++ b)
-/*      .map{x => Row(x:_*)}
-*/      .map(
+      //.map{x => Row(x:_*)}
+      .map(
         eventList => {
           putOnS3(
             eventList.toDF(),
-            "archive_"+ LocalDateTime.now().format(DateTimeFormatter.ISO_DATE_TIME)
+            "s3a://arcatest0/archive_" //+ LocalDateTime.now().format(DateTimeFormatter.ISO_DATE_TIME)
           )
         }
       )
+      .print()
+
 /*    }).map(event => {
         val dangerous_persons = event.persons.filter(person => person.peacescore < 0.5)
         dangerous_persons.foreach(person => println(s"[ALERT] ${person.name} is dangerous with ${person.peacescore} as peacescore."))
@@ -108,6 +115,7 @@ object Main extends App {
   }
 
   def putOnS3(df: DataFrame, outAddress: String) = {
+    println(outAddress)
     df.write.mode(SaveMode.Overwrite).parquet(outAddress)
   }
   
