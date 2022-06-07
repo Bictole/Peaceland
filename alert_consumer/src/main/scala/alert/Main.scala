@@ -61,8 +61,6 @@ object Main{
           implicit val coordsFormat = Json.format[Coords]
           implicit val eventFormat = Json.format[Event]
           val eventJsonString = Json.stringify(Json.toJson(event))
-          //val record = new ProducerRecord[String, String]("alert", eventJsonString)
-          //producer.send(record)
           eventJsonString
         }).foreachRDD({ rdd =>
           rdd.foreach({eventJsonString =>
