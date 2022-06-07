@@ -42,10 +42,10 @@ object Main{
             implicit val eventFormat = Json.format[Event]
             val json = Json.parse(record.value())
             eventFormat.reads(json).asOpt
-        }).map(event => {
+        }).filter(event => {
             val dangerous_persons = event.persons.filter(person => person.peacescore < 0.5)
-            dangerous_persons.foreach(person => println(s"[ALERT] ${person.name} is dangerous with ${person.peacescore} as peacescore."))
-            event
+            //dangerous_persons.foreach(person => println(s"[ALERT] ${person.name} is dangerous with ${person.peacescore} as peacescore."))
+            dangerous_persons.length != 0
         }).print()
         
         ssc.start()
