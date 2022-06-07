@@ -13,9 +13,6 @@ object Main{
 
     def main(args: Array[String]): Unit = {
 
-        // Declare classes format to deserialize
-        
-        
         val sparkConf = new SparkConf()
             .setAppName("peaceland_alert")
             .setMaster("local[*]")
@@ -39,6 +36,7 @@ object Main{
         )
 
         stream.flatMap(record => {
+            // Declare classes format to deserialize
             implicit val personFormat = Json.format[Person]
             implicit val coordsFormat = Json.format[Coords]
             implicit val eventFormat = Json.format[Event]
