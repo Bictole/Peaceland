@@ -7,3 +7,4 @@ metals.*
 .scalafmt.conf
 *.swp
 .idea
+project

@@ -1,0 +1,25 @@
+{
+    "peacewatcher_id": 149533740,
+    "timestamp": "2022-06-07T10:59:38.238357",
+    "location": {
+        "latitude": 0.3848261443603437,
+        "longitude": 0.34586013798452087
+    },
+    "words": [
+        "Help me!"
+    ],
+    "persons": [
+        {
+            "name": "Kali",
+            "peacescore": 0.9430074338981387
+        },
+        {
+            "name": "Jason",
+            "peacescore": 0.9765930550765101
+        },
+        {
+            "name": "Marianne",
+            "peacescore": 0.5215253731302293
+        }
+    ]
+}
