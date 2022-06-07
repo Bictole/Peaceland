@@ -18,7 +18,7 @@ object Main {
         implicit val eventWrites = Json.format[Event]
 
         val size = names.value.size
-        (0 to 10).foreach((i) => {
+        (0 to 60).foreach((i) => {
             val event = Event(
                 Random.nextInt,
                 LocalDateTime.now(),
@@ -32,7 +32,7 @@ object Main {
             )
             val eventJsonString = Json.stringify(Json.toJson(event))
             println(eventJsonString)
-            val record = new ProducerRecord[String, String](Array("peaceland"), "event", eventJsonString)
+            val record = new ProducerRecord[String, String]("peaceland", "event", eventJsonString)
             producer.send(record)
             Thread.sleep(1000)
         })
