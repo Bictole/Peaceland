@@ -4,34 +4,12 @@ import java.util.Properties
 import play.api.libs.json._
 import org.apache.kafka.common.serialization.{StringDeserializer, StringSerializer}
 import org.apache.kafka.clients.consumer.ConsumerConfig
-import org.apache.kafka.clients.producer._
+import org.apache.kafka.clients.producer.ProducerConfig
 import org.apache.spark.streaming.kafka010._
 import org.apache.spark.streaming.kafka010.ConsumerStrategies.Subscribe
 import org.apache.spark.streaming.kafka010.LocationStrategies._
 import org.apache.spark.streaming.{Seconds, StreamingContext}
 import org.apache.spark.SparkConf
-
-class KafkaSink(createProducer: () => KafkaProducer[String, String]) extends Serializable {
-
-  lazy val producer = createProducer()
-
-  def send(topic: String, value: String): Unit = producer.send(new ProducerRecord(topic, value))
-}
-
-object KafkaSink {
-  def apply(config: Properties): KafkaSink = {
-    val f = () => {
-      val producer = new KafkaProducer[String, String](config)
-
-      sys.addShutdownHook {
-        producer.close()
-      }
-
-      producer
-    }
-    new KafkaSink(f)
-  }
-}
 
 object Main{
 
