@@ -11,6 +11,28 @@ import org.apache.spark.streaming.kafka010.LocationStrategies._
 import org.apache.spark.streaming.{Seconds, StreamingContext}
 import org.apache.spark.SparkConf
 
+class KafkaSink(createProducer: () => KafkaProducer[String, String]) extends Serializable {
+
+  lazy val producer = createProducer()
+
+  def send(topic: String, value: String): Unit = producer.send(new ProducerRecord(topic, value))
+}
+
+object KafkaSink {
+  def apply(config: Properties): KafkaSink = {
+    val f = () => {
+      val producer = new KafkaProducer[String, String](config)
+
+      sys.addShutdownHook {
+        producer.close()
+      }
+
+      producer
+    }
+    new KafkaSink(f)
+  }
+}
+
 object Main{
 
     def main(args: Array[String]): Unit = {
@@ -41,7 +63,9 @@ object Main{
         props.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, "localhost:9092")
         props.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, classOf[StringSerializer])
         props.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, classOf[StringSerializer])
-        val producer : KafkaProducer[String, String] = new KafkaProducer[String, String](props)
+        //val producer : KafkaProducer[String, String] = new KafkaProducer[String, String](props)
+        val sparkContext = ssc.sparkContext
+        val kafkaSink = sparkContext.broadcast(KafkaSink(props))
 
         stream.flatMap(record => {
             // Declare classes format to deserialize
@@ -54,19 +78,21 @@ object Main{
             val dangerous_persons = event.persons.filter(person => person.peacescore < 0.5)
             //dangerous_persons.foreach(person => println(s"[ALERT] ${person.name} is dangerous with ${person.peacescore} as peacescore."))
             dangerous_persons.length != 0
-        }).map(event => {
-            //println(event.getClass)
-            implicit val personFormat = Json.format[Person]
-            implicit val coordsFormat = Json.format[Coords]
-            implicit val eventFormat = Json.format[Event]
-            val eventJsonString = Json.stringify(Json.toJson(event))
-            val record = new ProducerRecord[String, String]("alert", eventJsonString)
-            producer.send(record)
-            event
-        }).print()
+        }).map({event =>
+          implicit val personFormat = Json.format[Person]
+          implicit val coordsFormat = Json.format[Coords]
+          implicit val eventFormat = Json.format[Event]
+          val eventJsonString = Json.stringify(Json.toJson(event))
+          //val record = new ProducerRecord[String, String]("alert", eventJsonString)
+          //producer.send(record)
+          eventJsonString
+        }).foreachRDD({ rdd =>
+          rdd.foreach({eventJsonString =>
+            kafkaSink.value.send("alert", eventJsonString)
+          })
+        })
         
         ssc.start()
         ssc.awaitTermination()
-        producer.close()
     }
 }
