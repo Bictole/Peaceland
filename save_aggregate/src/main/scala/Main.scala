@@ -1,50 +1,103 @@
 package saveaggregate
 
-//import com.amazonaws.services.s3.{AmazonS3, AmazonS3ClientBuilder}
-import org.apache.spark.sql.SparkSession
-import org.apache.spark.sql.DataFrame
-import org.apache.spark.sql.SaveMode 
 import play.api.libs.json._
 import java.io.FileNotFoundException
 import java.io.IOException
 import scala.io.Source
-/*import play.api.libs.json._
+
 import org.apache.kafka.common.serialization.StringDeserializer
 import org.apache.kafka.clients.consumer.ConsumerConfig
+
+import org.apache.spark.sql.{SparkSession, DataFrame, SaveMode, Row, SQLContext}
+import spark.implicits._
+
+import org.apache.spark.streaming.{Seconds, StreamingContext}
 import org.apache.spark.streaming.kafka010._
 import org.apache.spark.streaming.kafka010.ConsumerStrategies.Subscribe
 import org.apache.spark.streaming.kafka010.LocationStrategies._
-import org.apache.spark.streaming.{Seconds, StreamingContext}*/
+import org.apache.spark.SparkConf
+import org.apache.spark.rdd.RDD
 
 object Main extends App {
   def experiment() = {
-      //val filePath = "s3a://arcatest0/test.json"
-      //val filePath = "s3a://peaceland/addresses.csv"
-      //val filePath = "/home/alexandrel/Peaceland/save_aggregate/test.json"
+    //val filePath = "s3a://arcatest0/test.json"
+    //val filePath = "s3a://peaceland/addresses.csv"
+    //val filePath = "/home/alexandrel/Peaceland/save_aggregate/test.json"
 
-      val filePath = "/home/arcanix/school/spark/Peaceland/save_aggregate/test.json"
+    val filePath = "/home/arcanix/school/spark/Peaceland/save_aggregate/test.json"
 
-      // find these info on IAM
-      val accessKey = "AKIAQTIILA2TLU7Y64XW"
-      val secretKey = "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"
-      val spark: SparkSession = SparkSession.builder()
-          .master("local[*]")
-          .appName("save_aggregate")
-          .getOrCreate()
+    // find these info on IAM
+    val accessKey = "AKIAQTIILA2TLU7Y64XW"
+    val secretKey = "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"
+    
+    val sparkConf = new SparkConf()
+        .setMaster("local[*]")
+        .setAppName("save_aggregate")
+        .set("spark.driver.host", "127.0.0.1")
 
-      spark.sparkContext.setLogLevel("ERROR")
+    val streamContext = new StreamingContext(sparkConf, Seconds(15))
+    val sparkContext = streamContext.sparkContext
+    val spark: SparkSession = SparkSession.builder.config(sparkContext.getConf).getOrCreate()
 
-      spark.sparkContext.hadoopConfiguration.set("fs.s3a.access.key", accessKey)
-      spark.sparkContext.hadoopConfiguration.set("fs.s3a.secret.key", secretKey)
-      spark.sparkContext.hadoopConfiguration.set("fs.s3a.endpoint", "s3.amazonaws.com")
+    spark.sparkContext.setLogLevel("ERROR")
 
-      val df = spark.read.option("multiLine", true).json(filePath)
-      df.show(false)
+    spark.sparkContext.hadoopConfiguration.set("fs.s3a.access.key", accessKey)
+    spark.sparkContext.hadoopConfiguration.set("fs.s3a.secret.key", secretKey)
+    spark.sparkContext.hadoopConfiguration.set("fs.s3a.endpoint", "s3.amazonaws.com")
 
-      putOnS3(df, "s3a://arcatest0/test.csv")
-     val content = getFromS3(spark, filePath)
+    val df = spark.read.option("multiLine", true).json(filePath)
+    df.show(false)
 
-      content.show(5, false)
+    putOnS3(df, "s3a://arcatest0/test.csv")
+    val content = getFromS3(spark, filePath)
+    content.show(5, false)
+
+    val kafkaParams = Map(
+        "bootstrap.servers" -> "localhost:9092",
+        "key.deserializer" -> classOf[StringDeserializer],
+        "value.deserializer" -> classOf[StringDeserializer],
+        "group.id" -> "alert"
+    )
+    
+    val topics = Array("peaceland")
+
+    val stream = KafkaUtils.createDirectStream[String, String](
+        streamContext,
+        PreferConsistent,
+        Subscribe[String,String](topics, kafkaParams)
+    )
+
+    println("start now")
+    
+    stream.flatMap(record => {
+        // Declare classes format to deserialize
+        implicit val personFormat = Json.format[Person]
+        implicit val coordsFormat = Json.format[Coords]
+        implicit val eventFormat = Json.format[Event]
+        val json = Json.parse(record.value())
+        eventFormat.reads(json).asOpt
+      })
+      .map(event => List.fill(1)(event))
+      .reduce((a, b) => a ++ b)
+/*      .map{x => Row(x:_*)}
+*/      .map(
+        eventList => {
+          putOnS3(
+            eventList.toDF(),
+            "archive_"+ LocalDateTime.now().format(DateTimeFormatter.ISO_DATE_TIME)
+          )
+        }
+      )
+/*    }).map(event => {
+        val dangerous_persons = event.persons.filter(person => person.peacescore < 0.5)
+        dangerous_persons.foreach(person => println(s"[ALERT] ${person.name} is dangerous with ${person.peacescore} as peacescore."))
+       
+      println(event)
+      event
+    }).toDF()*/
+    
+    streamContext.start()
+    streamContext.awaitTermination()
   }
 
   def getFromS3(configuredSpark: SparkSession, inAddress: String) = {
