@@ -1,0 +1,10 @@
+target
+.vscode
+.metals
+.bloop
+.bsp
+metals.*
+.scalafmt.conf
+*.swp
+.idea
+project
