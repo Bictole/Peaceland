@@ -2,6 +2,8 @@ package saveaggregate
 
 //import com.amazonaws.services.s3.{AmazonS3, AmazonS3ClientBuilder}
 import org.apache.spark.sql.SparkSession
+import org.apache.spark.sql.DataFrame
+import org.apache.spark.sql.SaveMode 
 import play.api.libs.json._
 import java.io.FileNotFoundException
 import java.io.IOException
@@ -15,39 +17,47 @@ import org.apache.spark.streaming.kafka010.LocationStrategies._
 import org.apache.spark.streaming.{Seconds, StreamingContext}*/
 
 object Main extends App {
-  def putOnS3() = {
+  def experiment() = {
+      //val filePath = "s3a://arcatest0/test.json"
+      //val filePath = "s3a://peaceland/addresses.csv"
+      //val filePath = "/home/alexandrel/Peaceland/save_aggregate/test.json"
+
+      val filePath = "/home/arcanix/school/spark/Peaceland/save_aggregate/test.json"
 
       // find these info on IAM
-      val accessKey = "AKIAS5I4RNJFG2HX6DUU"
-      val secretKey = "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"
-
+      val accessKey = "AKIAQTIILA2TLU7Y64XW"
+      val secretKey = "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"
       val spark: SparkSession = SparkSession.builder()
           .master("local[*]")
           .appName("save_aggregate")
           .getOrCreate()
-      //spark.sparkContext.setLogLevel("ERROR")
+
+      spark.sparkContext.setLogLevel("ERROR")
 
       spark.sparkContext.hadoopConfiguration.set("fs.s3a.access.key", accessKey)
       spark.sparkContext.hadoopConfiguration.set("fs.s3a.secret.key", secretKey)
       spark.sparkContext.hadoopConfiguration.set("fs.s3a.endpoint", "s3.amazonaws.com")
 
-      //val filePath = "/home/arcanix/Downloads/addresses.csv"
-      //val filePath = "s3a://peaceland/addresses.csv"
-      val filePath = "/home/alexandrel/Peaceland/save_aggregate/test.json"
-      val fSource = Source.fromFile(filePath)
-      val jsonRaw = fSource.getLines.mkString
-      fSource.close()
       val df = spark.read.option("multiLine", true).json(filePath)
       df.show(false)
-      df.write.mode("Overwrite").json("s3a://peaceland-avem/test.json")
-      val content = spark.read
-        .option("header", "true")
-        .option("inferSchema", "true")
-        .json("s3a://peaceland-avem/test.json")
+
+      putOnS3(df, "s3a://arcatest0/test.csv")
+     val content = getFromS3(spark, filePath)
 
       content.show(5, false)
   }
+
+  def getFromS3(configuredSpark: SparkSession, inAddress: String) = {
+    configuredSpark.read
+      .option("header", "true")
+      .option("inferSchema", "true")
+      .json("s3a://arcatest0/test.json")
+  }
+
+  def putOnS3(df: DataFrame, outAddress: String) = {
+    df.write.mode(SaveMode.Overwrite).parquet(outAddress)
+  }
   
-  putOnS3()
+  experiment()
   //println("Hello, World!")
 }
