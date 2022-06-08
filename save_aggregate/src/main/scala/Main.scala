@@ -20,6 +20,7 @@ import org.apache.spark.streaming.kafka010.ConsumerStrategies.Subscribe
 import org.apache.spark.streaming.kafka010.LocationStrategies._
 import org.apache.spark.SparkConf
 import org.apache.spark.rdd.RDD
+import org.apache.spark.sql.Encoders
 
 object Main extends App {
   def experiment() = {
@@ -73,7 +74,7 @@ object Main extends App {
     )
 
     println("start now")
-    
+    val encoderSchema = Encoders.product[SaveableEvent].schema
     stream.flatMap(record => {
         // Declare classes format to deserialize
         implicit val personFormat = Json.format[Person]
@@ -89,25 +90,19 @@ object Main extends App {
       })
       .map(event => List.fill(1)(event))
       .reduce((a, b) => a ++ b)
+      //.map(eventList => Row(eventList:_*))
+      //.map(event => {println(event); event})
       .map(
-        eventList => {
-          putOnS3(
-            eventList.toDF(),
-            "s3a://arcatest0/archive_" //+ LocalDateTime.now().format(DateTimeFormatter.ISO_DATE_TIME)
-          )
-          eventList
+        eventRows => {
+          //val rdd = sparkContext.makeRDD(eventRows)
+          //val df = spark.createDataFrame(rdd, encoderSchema)
+          val df = eventRows.toList.toDF
+          val path = "s3a://arcatest0/archive_" //+ LocalDateTime.now().format(DateTimeFormatter.ISO_DATE_TIME)
+          putOnS3(df, path)
         }
       )
       .print()
 
-/*    }).map(event => { 
-        val dangerous_persons = event.persons.filter(person => person.peacescore < 0.5)
-        dangerous_persons.foreach(person => println(s"[ALERT] ${person.name} is dangerous with ${person.peacescore} as peacescore."))
-       
-      println(event)
-      event
-    }).toDF()*/
-    
     streamContext.start()
     streamContext.awaitTermination()
   }
