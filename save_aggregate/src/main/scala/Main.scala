@@ -82,20 +82,25 @@ object Main extends App {
         val json = Json.parse(record.value())
         eventFormat.reads(json).asOpt
       })
+      .map(event => {
+        println(event)
+        val serializedTime = event.timestamp.format(DateTimeFormatter.ISO_DATE_TIME)
+        SaveableEvent(event.peacewatcherID, serializedTime, event.location, event.words, event.persons)
+      })
       .map(event => List.fill(1)(event))
       .reduce((a, b) => a ++ b)
-      //.map{x => Row(x:_*)}
       .map(
         eventList => {
           putOnS3(
             eventList.toDF(),
             "s3a://arcatest0/archive_" //+ LocalDateTime.now().format(DateTimeFormatter.ISO_DATE_TIME)
           )
+          eventList
         }
       )
       .print()
 
-/*    }).map(event => {
+/*    }).map(event => { 
         val dangerous_persons = event.persons.filter(person => person.peacescore < 0.5)
         dangerous_persons.foreach(person => println(s"[ALERT] ${person.name} is dangerous with ${person.peacescore} as peacescore."))
        

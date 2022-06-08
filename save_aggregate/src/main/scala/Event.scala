@@ -1,12 +1,12 @@
 package saveaggregate
 
-import java.sql.Date
+import java.time.LocalDateTime
 
 final case class Coords(latitude: Double, longitude: Double)
 
 final case class Event(
-    peacewatcher_id : Int,
-    timestamp: Date,
+    peacewatcherID : Int,
+    timestamp: LocalDateTime,
     location: Coords,
     words: List[String],
     persons: List[Person]
