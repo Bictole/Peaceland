@@ -22,6 +22,8 @@ import org.apache.spark.SparkConf
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.Encoders
 
+import scala.reflect.ClassTag
+
 object Main extends App {
   def experiment() = {
     //val filePath = "s3a://arcatest0/test.json"
@@ -43,7 +45,6 @@ object Main extends App {
     val sparkContext = streamContext.sparkContext
     val spark: SparkSession = SparkSession.builder.config(sparkContext.getConf).getOrCreate()
 
-    import spark.implicits._ //cursed AF
 
     spark.sparkContext.setLogLevel("ERROR")
 
@@ -51,12 +52,12 @@ object Main extends App {
     spark.sparkContext.hadoopConfiguration.set("fs.s3a.secret.key", secretKey)
     spark.sparkContext.hadoopConfiguration.set("fs.s3a.endpoint", "s3.amazonaws.com")
 
-    val df = spark.read.option("multiLine", true).json(filePath)
+/*    val df = spark.read.option("multiLine", true).json(filePath)
     df.show(false)
 
     putOnS3(df, "s3a://arcatest0/test.csv")
     val content = getFromS3(spark, filePath)
-    content.show(5, false)
+    content.show(5, false)*/
 
     val kafkaParams = Map(
         "bootstrap.servers" -> "localhost:9092",
@@ -94,11 +95,20 @@ object Main extends App {
       //.map(event => {println(event); event})
       .map(
         eventRows => {
+          import spark.implicits._ //cursed AF
+
           //val rdd = sparkContext.makeRDD(eventRows)
           //val df = spark.createDataFrame(rdd, encoderSchema)
-          val df = eventRows.toList.toDF
+          val eventList = eventRows.toList
+          val df = eventList.toDF
+          //val rdd = spark.sparkContext.parallelize(eventList)
+          //rdd.take(5).foreach(println)
+          //val df = spark.createDataFrame(rdd, encoderSchema)
           val path = "s3a://arcatest0/archive_" //+ LocalDateTime.now().format(DateTimeFormatter.ISO_DATE_TIME)
           putOnS3(df, path)
+/*          println("hi")
+          println(eventList)*/
+          eventList
         }
       )
       .print()
