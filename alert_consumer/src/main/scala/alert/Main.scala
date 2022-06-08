@@ -26,7 +26,7 @@ object Main{
             "bootstrap.servers" -> "localhost:9092",
             "key.deserializer" -> classOf[StringDeserializer],
             "value.deserializer" -> classOf[StringDeserializer],
-            "group.id" -> "alert"
+            "group.id" -> "alert_consumer"
         )
         
         val topics = Array("peaceland")
@@ -64,7 +64,7 @@ object Main{
           eventJsonString
         }).foreachRDD({ rdd =>
           rdd.foreach({eventJsonString =>
-            kafkaSink.value.send("alert", eventJsonString)
+            kafkaSink.value.send("alert", "event_alert", eventJsonString)
           })
         })
         
