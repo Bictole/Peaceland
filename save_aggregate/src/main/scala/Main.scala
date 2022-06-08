@@ -44,6 +44,7 @@ object Main extends App {
     val streamContext = new StreamingContext(sparkConf, Seconds(15))
     val sparkContext = streamContext.sparkContext
     val spark: SparkSession = SparkSession.builder.config(sparkContext.getConf).getOrCreate()
+    import spark.implicits._ //cursed AF
 
 
     spark.sparkContext.setLogLevel("ERROR")
@@ -92,11 +93,9 @@ object Main extends App {
       .map(event => List.fill(1)(event))
       .reduce((a, b) => a ++ b)
       //.map(eventList => Row(eventList:_*))
-      //.map(event => {println(event); event})
+      .map(event => {println(event); event})
       .map(
         eventRows => {
-          import spark.implicits._ //cursed AF
-
           //val rdd = sparkContext.makeRDD(eventRows)
           //val df = spark.createDataFrame(rdd, encoderSchema)
           val eventList = eventRows.toList
