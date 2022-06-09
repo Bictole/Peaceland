@@ -11,6 +11,7 @@
   "license": "ISC",
   "dependencies": {
     "@slack/webhook": "^6.1.0",
+    "discord-webhook-node": "^1.1.8",
     "ip": "^1.1.8",
     "kafkajs": "^2.0.2",
     "npm-hook-receiver": "^0.0.7"

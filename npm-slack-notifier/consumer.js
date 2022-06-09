@@ -1,4 +1,5 @@
 const kafka = require('./kafka')
+const discordHook = require('./discord_webhook')
 
 const consumer = kafka.consumer({
   groupId: "alert"
@@ -20,6 +21,7 @@ const main = async () => {
         key: message.key.toString(),
         value: message.value.toString()
       })
+      discordHook.send(message.value.toString())
     }
   })
 }
