@@ -21,7 +21,20 @@ const main = async () => {
         key: message.key.toString(),
         value: message.value.toString()
       })
-      discordHook.send(message.value.toString())
+      let alert = JSON.parse(message.value);
+      let discordMessage = "[ALERT] - " + alert.timestamp.toString().split(".")[0] + " - PeaceWatcher_" + alert.peacewatcher_id.toString() + "\n";
+      discordMessage += "Location : (" + alert.location.latitude.toString() + ", " + alert.location.longitude.toString() + ") :\n";
+      discordMessage += "Words detected : " + alert.words.toString() + "\n";
+
+      discordMessage += "Dangerous Persons : \n";
+      for (p of alert.persons) {
+        discordMessage += "\t=> " + p.name.toString() + " : " + p.peacescore.toString() + "\n";
+      }
+      
+      discordMessage += "------------------------------------------------------------------------------------------------------------------";
+      console.log(discordMessage);
+      discordHook.send(discordMessage);
+
     }
   })
 }

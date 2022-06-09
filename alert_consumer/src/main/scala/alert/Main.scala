@@ -57,14 +57,16 @@ object Main{
             //dangerous_persons.foreach(person => println(s"[ALERT] ${person.name} is dangerous with ${person.peacescore} as peacescore."))
             dangerous_persons.length != 0
         }).map({event =>
-          implicit val personFormat = Json.format[Person]
-          implicit val coordsFormat = Json.format[Coords]
-          implicit val eventFormat = Json.format[Event]
-          val eventJsonString = Json.stringify(Json.toJson(event))
-          eventJsonString
+            implicit val personFormat = Json.format[Person]
+            implicit val coordsFormat = Json.format[Coords]
+            implicit val alertFormat = Json.format[Alert]
+
+            val new_alert = Alert(event.peacewatcher_id, event.timestamp, event.location, event.words, event.persons.filter(person => person.peacescore < 0.5))
+            val alertJsonString = Json.stringify(Json.toJson(new_alert))
+            alertJsonString
         }).foreachRDD({ rdd =>
-          rdd.foreach({eventJsonString =>
-            kafkaSink.value.send("alert", "event_alert", eventJsonString)
+            rdd.foreach({alertJsonString =>
+                kafkaSink.value.send("alert", "event_alert", alertJsonString)
           })
         })
         
