@@ -40,8 +40,7 @@ object Main extends App {
     val sparkContext = streamContext.sparkContext
     val spark: SparkSession = SparkSession.builder.config(sparkContext.getConf).getOrCreate()
     val sqlContext = new org.apache.spark.sql.SQLContext(sparkContext)
-    import spark.implicits._
-    import sqlContext.implicits._
+    //import sqlContext.implicits._
 
     spark.sparkContext.setLogLevel("ERROR")
 
@@ -64,6 +63,20 @@ object Main extends App {
         Subscribe[String,String](topics, kafkaParams)
     )
 
+    import spark.implicits._
+
+    val list = Seq(
+      SaveableEvent(0, "", Coords(1.2, 1.2), List("foo", "bar"), List(Person("lmao", 3.6))),
+      SaveableEvent(0, "", Coords(1.2, 1.2), List("foo", "bar"), List(Person("lmao", 3.6))),
+      SaveableEvent(0, "", Coords(1.2, 1.2), List("foo", "bar"), List(Person("lmao", 3.6))),
+      SaveableEvent(0, "", Coords(1.2, 1.2), List("foo", "bar"), List(Person("lmao", 3.6))),
+      SaveableEvent(0, "", Coords(1.2, 1.2), List("foo", "bar"), List(Person("lmao", 3.6)))
+    )
+
+    val df = list.toDF
+    df.show()
+
+
     stream.flatMap(record => {
         // Declare classes format to deserialize
         implicit val personFormat = Json.format[Person]
@@ -76,10 +89,11 @@ object Main extends App {
         println(event)
         val serializedTime = event.timestamp.format(DateTimeFormatter.ISO_DATE_TIME)
         SaveableEvent(event.peacewatcherID, serializedTime, event.location, event.words, event.persons)
-      })
-/*      .map(event => {
+      }).saveAsTextFiles("s3a://arcatest0/testingsaveastext", ".txt")
+      //.saveAsObjectFile("s3a://arcatest0/testingsaveasobj", ".obj")
+/*/*      .map(event => {
         val values = event.productIterator.toSeq.toArray
-        val encoderSchema = Encoders.product[SaveableEvent].schema
+        val encoderSchema = Encoders.product[SaveableEvent].schemaq
         import org.apache.spark.sql.Row
         import org.apache.spark.sql.catalyst.expressions.GenericRowWithSchema
         val row: Row = new GenericRowWithSchema(values, encoderSchema)
@@ -115,8 +129,8 @@ object Main extends App {
           val path = "s3a://arcatest0/archive"
           putOnS3(df, path)*/
         }
-      )
-      .print()
+      )*/
+      //.print()
 
     streamContext.start()
     streamContext.awaitTermination()
