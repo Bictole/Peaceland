@@ -21,18 +21,13 @@ import org.apache.spark.streaming.kafka010.LocationStrategies._
 import org.apache.spark.SparkConf
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.Encoders
+import org.apache.spark.sql.SQLContext  
 
+//import scala.collection.JavaConversions._
 import scala.reflect.ClassTag
 
 object Main extends App {
   def experiment() = {
-    //val filePath = "s3a://arcatest0/test.json"
-    //val filePath = "s3a://peaceland/addresses.csv"
-    //val filePath = "/home/alexandrel/Peaceland/save_aggregate/test.json"
-
-    val filePath = "/home/arcanix/school/spark/Peaceland/save_aggregate/test.json"
-
-    // find these info on IAM
     val accessKey = "AKIAQTIILA2TLU7Y64XW"
     val secretKey = "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"
     
@@ -44,21 +39,15 @@ object Main extends App {
     val streamContext = new StreamingContext(sparkConf, Seconds(15))
     val sparkContext = streamContext.sparkContext
     val spark: SparkSession = SparkSession.builder.config(sparkContext.getConf).getOrCreate()
-    import spark.implicits._ //cursed AF
-
+    val sqlContext = new org.apache.spark.sql.SQLContext(sparkContext)
+    import spark.implicits._
+    import sqlContext.implicits._
 
     spark.sparkContext.setLogLevel("ERROR")
 
     spark.sparkContext.hadoopConfiguration.set("fs.s3a.access.key", accessKey)
     spark.sparkContext.hadoopConfiguration.set("fs.s3a.secret.key", secretKey)
     spark.sparkContext.hadoopConfiguration.set("fs.s3a.endpoint", "s3.amazonaws.com")
-
-/*    val df = spark.read.option("multiLine", true).json(filePath)
-    df.show(false)
-
-    putOnS3(df, "s3a://arcatest0/test.csv")
-    val content = getFromS3(spark, filePath)
-    content.show(5, false)*/
 
     val kafkaParams = Map(
         "bootstrap.servers" -> "localhost:9092",
@@ -75,8 +64,6 @@ object Main extends App {
         Subscribe[String,String](topics, kafkaParams)
     )
 
-    println("start now")
-    val encoderSchema = Encoders.product[SaveableEvent].schema
     stream.flatMap(record => {
         // Declare classes format to deserialize
         implicit val personFormat = Json.format[Person]
@@ -90,24 +77,43 @@ object Main extends App {
         val serializedTime = event.timestamp.format(DateTimeFormatter.ISO_DATE_TIME)
         SaveableEvent(event.peacewatcherID, serializedTime, event.location, event.words, event.persons)
       })
+/*      .map(event => {
+        val values = event.productIterator.toSeq.toArray
+        val encoderSchema = Encoders.product[SaveableEvent].schema
+        import org.apache.spark.sql.Row
+        import org.apache.spark.sql.catalyst.expressions.GenericRowWithSchema
+        val row: Row = new GenericRowWithSchema(values, encoderSchema)
+        row
+      })*/
       .map(event => List.fill(1)(event))
       .reduce((a, b) => a ++ b)
-      //.map(eventList => Row(eventList:_*))
       .map(event => {println(event); event})
       .map(
         eventRows => {
-          //val rdd = sparkContext.makeRDD(eventRows)
-          //val df = spark.createDataFrame(rdd, encoderSchema)
-          val eventList = eventRows.toList
-          val df = eventList.toDF
-          //val rdd = spark.sparkContext.parallelize(eventList)
-          //rdd.take(5).foreach(println)
-          //val df = spark.createDataFrame(rdd, encoderSchema)
-          val path = "s3a://arcatest0/archive_" //+ LocalDateTime.now().format(DateTimeFormatter.ISO_DATE_TIME)
-          putOnS3(df, path)
-/*          println("hi")
-          println(eventList)*/
-          eventList
+          val encoderSchema = Encoders.product[SaveableEvent].schema
+          println(eventRows.getClass)
+          //val df = eventRows.toDF
+          //df.show()
+          val rdd = spark.sparkContext.parallelize(eventRows)
+          val df = sqlContext.createDataFrame(rdd)
+          df.show()
+          df
+/*          val encoderSchema = Encoders.product[SaveableEvent].schema
+          //val eventList = eventRows
+          //val df = rdd.toDF()
+/*          val df = spark.createDataFrame(
+            spark.sparkContext.parallelize(eventList),
+            encoderSchema
+          )*/
+          //val s = eventRows.toSeq
+          //val df = s.toDF
+          val rdd = sparkContext.parallelize(eventRows)
+          //val rowRdd = rdd.map(v => Row(v: _*))
+          val df = spark.createDataFrame(eventRows, encoderSchema)
+          df.show(1, false)
+          //val df = eventList.toDF // nullptr exception here
+          val path = "s3a://arcatest0/archive"
+          putOnS3(df, path)*/
         }
       )
       .print()
@@ -120,7 +126,7 @@ object Main extends App {
     configuredSpark.read
       .option("header", "true")
       .option("inferSchema", "true")
-      .json("s3a://arcatest0/test.json")
+      .json(inAddress)
   }
 
   def putOnS3(df: DataFrame, outAddress: String) = {
@@ -129,5 +135,4 @@ object Main extends App {
   }
   
   experiment()
-  //println("Hello, World!")
 }
