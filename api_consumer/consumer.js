@@ -24,7 +24,7 @@ const main = async () => {
       })
       let alert = JSON.parse(message.value);
       let discordMessage = "[ALERT] - " + alert.timestamp.toString().split(".")[0] + " - PeaceWatcher_" + alert.peacewatcher_id.toString() + "\n";
-      discordMessage += "Location : (" + alert.location.latitude.toFixed(6).toString() + ", " + alert.location.longitude.toFixed(6).toString() + ")\n";
+      discordMessage += "Location : http://maps.google.com/maps?q=" + alert.location.latitude.toFixed(6).toString() + "," + alert.location.longitude.toFixed(6).toString() + "\n";
       discordMessage += "Words detected : | "; 
       for (w of alert.words) {
         discordMessage += "\"" + w + "\"" + " | ";
