@@ -82,8 +82,8 @@ object Main {
         println("\n\n")
         val agitationPerLocation = obj.groupBy(x =>
             (
-                (x.location.latitude * 100).toInt,
-                (x.location.longitude * 100).toInt
+                (x.location.latitude),
+                (x.location.longitude)
             )
         )
         println(s"Agitation per location")
