@@ -45,13 +45,16 @@ object Main {
             obj.words,
             obj.persons
             ))
+
+        val threshold = 0.1
+
         println("\n\n")
         val weekDays = obj.groupBy(x => x.timestamp.getDayOfWeek())
         println(s"Days of the week with the most pissed off people:")
         weekDays.foreach(x => println(s"${x._1} : ${x._2
             .map(event => {
                 event.persons
-                    .filter(person => person.peacescore < 0.5)
+                    .filter(person => person.peacescore < threshold)
                     .size })
             .reduce((x, y) => x + y)
         }"))
@@ -62,7 +65,7 @@ object Main {
         agitationPerWords.foreach(x => println(s"${x._1} : ${x._2
             .map(event => {
                 event.persons
-                    .filter(person => person.peacescore < 0.5)
+                    .filter(person => person.peacescore < threshold)
                     .size })
             .reduce((x, y) => x + y)
         }"))
