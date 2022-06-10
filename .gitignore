@@ -8,3 +8,5 @@ metals.*
 *.swp
 .idea
 project
+zookeeper
+node_modules
