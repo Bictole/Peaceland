@@ -8,14 +8,20 @@ app.use(function(req, res, next) {
     next();
   });
 
-const alert = {message: "No alert"}
+let alert = ""
+let lastalert = false
 
 app.get("/alert", (req, res) => {
-    res.send(alert)
+    if (!lastalert || alert === "") {
+        lastalert = true
+        res.send(alert)
+    }
+    res.end()
 })
 
 app.post("/alert", (req, res) => {
     alert = req.body
+    lastalert = false
     res.send(alert)
 })
 

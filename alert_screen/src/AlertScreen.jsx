@@ -83,7 +83,7 @@ function AlertScreen(props) {
   			  		<Grid item lg={12} key={person.id}>
   					  	<Alert severity="warning" onClose={() => {setPeopleList(removeID(peopleList, person.id))}}>
   					  		<Typography variant="subtitle1" align="center">
-  					  			<strong>[Peaceless individual detected]</strong>  -- The citizen <strong>{person.name}</strong> has an worrying peacescore of <strong>{person.peacescore}.</strong>. 
+  					  			<strong>[Peaceless individual detected]</strong>  -- The citizen <strong>{person.name}</strong> has a worrying peacescore of <strong>{person.peacescore}.</strong>. 
   					  		</Typography>
   					  	</Alert>
   				  	</Grid>
