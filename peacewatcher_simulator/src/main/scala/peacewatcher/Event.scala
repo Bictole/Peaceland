@@ -5,7 +5,7 @@ import java.time.LocalDateTime
 final case class Coords(latitude: Double, longitude: Double)
 
 final case class Event(
-    peacewatcher_id : Int,
+    peacewatcherID : Int,
     timestamp: LocalDateTime,
     location: Coords,
     words: List[String],
