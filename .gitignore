@@ -9,3 +9,4 @@ metals.*
 .idea
 project
 zookeeper
+node_modules

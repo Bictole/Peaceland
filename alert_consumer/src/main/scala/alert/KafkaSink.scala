@@ -7,7 +7,7 @@ class KafkaSink(createProducer: () => KafkaProducer[String, String]) extends Ser
 
   lazy val producer = createProducer()
 
-  def send(topic: String, value: String): Unit = producer.send(new ProducerRecord(topic, value))
+  def send(topic: String, key: String, value: String): Unit = producer.send(new ProducerRecord(topic, key, value))
 }
 
 object KafkaSink {

@@ -26,7 +26,7 @@ object Main{
             "bootstrap.servers" -> "localhost:9092",
             "key.deserializer" -> classOf[StringDeserializer],
             "value.deserializer" -> classOf[StringDeserializer],
-            "group.id" -> "alert"
+            "group.id" -> "alert_consumer"
         )
         
         val topics = Array("peaceland")
@@ -53,18 +53,20 @@ object Main{
             val json = Json.parse(record.value())
             eventFormat.reads(json).asOpt
         }).filter(event => {
-            val dangerous_persons = event.persons.filter(person => person.peacescore < 0.5)
+            val dangerous_persons = event.persons.filter(person => person.peacescore < 0.1)
             //dangerous_persons.foreach(person => println(s"[ALERT] ${person.name} is dangerous with ${person.peacescore} as peacescore."))
             dangerous_persons.length != 0
         }).map({event =>
-          implicit val personFormat = Json.format[Person]
-          implicit val coordsFormat = Json.format[Coords]
-          implicit val eventFormat = Json.format[Event]
-          val eventJsonString = Json.stringify(Json.toJson(event))
-          eventJsonString
+            implicit val personFormat = Json.format[Person]
+            implicit val coordsFormat = Json.format[Coords]
+            implicit val alertFormat = Json.format[Alert]
+
+            val new_alert = Alert(event.peacewatcher_id, event.timestamp, event.location, event.words, event.persons.filter(person => person.peacescore < 0.1))
+            val alertJsonString = Json.stringify(Json.toJson(new_alert))
+            alertJsonString
         }).foreachRDD({ rdd =>
-          rdd.foreach({eventJsonString =>
-            kafkaSink.value.send("alert", eventJsonString)
+            rdd.foreach({alertJsonString =>
+                kafkaSink.value.send("alert", "event_alert", alertJsonString)
           })
         })
         
