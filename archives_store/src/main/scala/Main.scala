@@ -34,8 +34,8 @@ object Main extends App {
   Logger.getLogger("org").setLevel(Level.ERROR)
 
   //access and secret key for AWS S3, found on IAM
-  val accessKey = "AKIAS5I4RNJFMB52MQW5"
-  val secretKey = "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"
+  val accessKey = ""
+  val secretKey = ""
   
   val sparkConf = new SparkConf()
       .setMaster("local[*]")

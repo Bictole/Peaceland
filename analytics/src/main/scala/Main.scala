@@ -23,8 +23,8 @@ object Main {
         // keep only the errors
         Logger.getLogger("org").setLevel(Level.ERROR)
 
-        val accessKey = "AKIAS5I4RNJFMB52MQW5"
-        val secretKey = "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"
+        val accessKey = ""
+        val secretKey = ""
 
         val sparkConf = new SparkConf()
         .setMaster("local[*]")
