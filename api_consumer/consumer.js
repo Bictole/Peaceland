@@ -1,5 +1,6 @@
 const kafka = require('./kafka')
 const discordHook = require('./discord_webhook')
+//const axios = require('axios')
 
 const consumer = kafka.consumer({
   groupId: "alert"
@@ -39,6 +40,20 @@ const main = async () => {
       console.log(discordMessage);
       discordHook.send(discordMessage);
 
+
+      /*for (p of alert.persons) {
+        axios.post('localhost:4000/alert', {
+          name: p.name,
+          peacescore: p.peacescore.toString()
+        })
+        .then(function (response) {
+          console.log(response);
+        })
+        .catch(function (error) {
+          console.log(error);
+        });
+      }*/
+  
     }
   })
 }

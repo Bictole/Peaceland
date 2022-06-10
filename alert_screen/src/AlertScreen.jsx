@@ -21,7 +21,13 @@ function removeID(list, id){
 }
 
 function fetchNewAlerts(callback){
-	fetch("/alerts/")
+	fetch('http://localhost:4000/alert', {
+        method: 'GET',
+        headers: {
+            'Accept': 'application/json',
+            'Content-type': 'application/json'
+        }
+    })
 	  .then(res =>{ 
 	    return res.json();
 	  })
