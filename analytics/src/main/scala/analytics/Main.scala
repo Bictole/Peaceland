@@ -7,19 +7,9 @@ import java.time.format.DateTimeFormatter
 
 import scala.io.Source
 
-import org.apache.kafka.common.serialization.StringDeserializer
-import org.apache.kafka.clients.consumer.ConsumerConfig
+import org.apache.spark.sql.SparkSession
 
-import org.apache.spark.sql.{SparkSession, DataFrame, SaveMode, Row, SQLContext}
-
-import org.apache.spark.streaming.{Seconds, StreamingContext}
-import org.apache.spark.streaming.kafka010._
-import org.apache.spark.streaming.kafka010.ConsumerStrategies.Subscribe
-import org.apache.spark.streaming.kafka010.LocationStrategies._
-import org.apache.spark._
-import org.apache.spark.rdd.RDD
-import org.apache.spark.sql.Encoders
-import org.apache.spark.sql.SQLContext
+import org.apache.spark.{SparkContext, SparkConf}
 
 
 object Main {
@@ -51,7 +41,7 @@ object Main {
             obj.persons
             ))
         val weekDays = obj.groupBy(x => x.timestamp.getDayOfWeek())
-		println(s"Days of the week with the most pissed off people:")
-		weekDays.foreach(x => println(s"${x._1} : ${x._2.size}"))
-	}
+        println(s"Days of the week with the most pissed off people:")
+        weekDays.foreach(x => println(s"${x._1} : ${x._2.size}"))
+    }
 }
