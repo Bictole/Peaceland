@@ -66,5 +66,20 @@ object Main {
                     .size })
             .reduce((x, y) => x + y)
         }"))
+
+        println("\n\n")
+        val agitationPerPeacewatcher = obj.groupBy(x => x.peacewatcherID)
+        println(s"Agitation per peacewatcher id:")
+        agitationPerPeacewatcher.foreach(x => println(s"${x._1} : ${x._2.size}"))
+
+        println("\n\n")
+        val agitationPerLocation = obj.groupBy(x =>
+            (
+                (x.location.latitude * 100).toInt,
+                (x.location.longitude * 100).toInt
+            )
+        )
+        println(s"Agitation per location")
+        agitationPerLocation.foreach(x => println(s"${x._1} : ${x._2.size}"))
     }
 }
