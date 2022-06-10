@@ -1,5 +1,3 @@
-package saveaggregate
-
 import play.api.libs.json._
 
 import java.io.FileNotFoundException
@@ -27,8 +25,8 @@ import scala.reflect.ClassTag
 
 object Main extends App {
   //access and secret key for AWS S3, found on IAM
-  val accessKey = ""
-  val secretKey = ""
+  val accessKey = "AKIAS5I4RNJFMB52MQW5"
+  val secretKey = "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"
   
   val sparkConf = new SparkConf()
       .setMaster("local[*]")
@@ -54,7 +52,7 @@ object Main extends App {
       "bootstrap.servers" -> "localhost:9092",
       "key.deserializer" -> classOf[StringDeserializer],
       "value.deserializer" -> classOf[StringDeserializer],
-      "group.id" -> "alert"
+      "group.id" -> "aggregate"
   )
   
   val topics = Array("peaceland")
@@ -66,12 +64,12 @@ object Main extends App {
   )
 
   //path to file that we will read from and write to
-  val filePath = "s3a://arcatest0/charmander"
-  val fileExtension = ".obj"
+  val filePath = "s3a://peaceland-avem/event"
+  val fileExtension = "obj"
 
   //this is an example of how to read. it won't work cause I reached my max cap on S3.
-  val obj = sparkContext.objectFile("s3a://arcatest0/charmander-*." + fileExtension)
-  obj.foreach(println)
+  //val obj = sparkContext.objectFile(filePath + "-*" + fileExtension)
+  //obj.foreach(println)
 
   stream.flatMap(record => { //deserializes records into instances of Event case class
       // Declare classes format to deserialize

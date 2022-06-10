@@ -1,4 +1,3 @@
-package saveaggregate
 import play.api.libs.json.{Json, OFormat}
 import scala.util.Try
 
