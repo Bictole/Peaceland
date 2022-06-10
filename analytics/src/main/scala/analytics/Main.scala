@@ -81,5 +81,10 @@ object Main {
         )
         println(s"Agitation per location")
         agitationPerLocation.foreach(x => println(s"${x._1} : ${x._2.size}"))
+
+        println("\n\n")
+        val agitationPerHour = obj.groupBy(x => x.timestamp.getHour)
+        println("Agitation per hour:")
+        agitationPerHour.foreach(x => println(s"${x._1}h : ${x._2.size}"))
     }
 }
