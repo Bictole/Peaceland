@@ -48,6 +48,13 @@ object Main {
         println("\n\n")
         val weekDays = obj.groupBy(x => x.timestamp.getDayOfWeek())
         println(s"Days of the week with the most pissed off people:")
-        weekDays.foreach(x => println(s"${x._1} : ${x._2.size}"))
+        weekDays.foreach(x => println(s"${x._1} : ${x._2
+            .map(
+                event => {
+                    event.persons
+                        .filter(person => person.peacescore < 0.5)
+                        .size })
+            .reduce((x, y) => x + y)
+        }"))
     }
 }
