@@ -1,3 +1,5 @@
+package archives_store
+
 import play.api.libs.json._
 
 import java.io.FileNotFoundException
@@ -23,7 +25,14 @@ import org.apache.spark.sql.SQLContext
 
 import scala.reflect.ClassTag
 
+import org.apache.log4j.{Level, Logger}
+
+import data._
+
 object Main extends App {
+  // keep only the errors
+  Logger.getLogger("org").setLevel(Level.ERROR)
+
   //access and secret key for AWS S3, found on IAM
   val accessKey = "AKIAS5I4RNJFMB52MQW5"
   val secretKey = "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"
@@ -42,7 +51,6 @@ object Main extends App {
   //I'm keeping this here as a reminder of how glad I am that we're no longer using it:
   //import sqlContext.implicits._
 
-  spark.sparkContext.setLogLevel("ERROR")
 
   spark.sparkContext.hadoopConfiguration.set("fs.s3a.access.key", accessKey)
   spark.sparkContext.hadoopConfiguration.set("fs.s3a.secret.key", secretKey)
@@ -72,17 +80,13 @@ object Main extends App {
   //obj.foreach(println)
 
   stream.flatMap(record => { //deserializes records into instances of Event case class
-      // Declare classes format to deserialize
-      implicit val personFormat = Json.format[Person]
-      implicit val coordsFormat = Json.format[Coords]
-      implicit val eventFormat = Json.format[Event]
       val json = Json.parse(record.value())
-      eventFormat.reads(json).asOpt
+      Event.EventFormatter.reads(json).asOpt
     })
     .map(event => { //print the received event, and convert the Event cas class to a Saveable Event to avoid timestamp issues
       println(event)
       val serializedTime = event.timestamp.format(DateTimeFormatter.ISO_DATE_TIME)
-      SaveableEvent(event.peacewatcherID, serializedTime, event.location, event.words, event.persons)
+      SaveableEvent(event.peacewatcher_id, serializedTime, event.location, event.words, event.persons, event.battery, event.temperature)
     })
     .saveAsObjectFiles(filePath, fileExtension) //save the batch as an object file that will contain a map partition of all elements of the batch
   

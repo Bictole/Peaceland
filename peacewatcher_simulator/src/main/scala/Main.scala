@@ -1,4 +1,4 @@
-package peacewatcher
+package peacewatcher_simulator
 
 import java.util.Properties
 import play.api.libs.json._
@@ -7,16 +7,17 @@ import scala.util.Random
 import scala.io.Source
 import org.apache.kafka.clients.producer._
 import org.apache.kafka.common.serialization.StringSerializer
+
+import org.apache.log4j.{Level, Logger}
+
+import data._
         
 object Main {
     
     def generateData(names: JsArray, words: List[String], producer: KafkaProducer[String, String]) = {
+        // keep only the errors
+        Logger.getLogger("org").setLevel(Level.ERROR)
         
-        // Declare classes format to serialize
-        implicit val personWrites = Json.format[Person]
-        implicit val coordsWrites = Json.format[Coords]
-        implicit val eventWrites = Json.format[Event]
-
         val size = names.value.size
         (0 to 1000).foreach((i) => {
             val event = Event(
@@ -28,7 +29,9 @@ object Main {
                         Person(
                             (names.value(Random.nextInt(size)) \ "name").as[String],
                             Random.nextDouble
-                        )).toList
+                        )).toList,
+                Random.between(0, 100),
+                Random.between(-30, 50)
             )
             val eventJsonString = Json.stringify(Json.toJson(event))
             println(eventJsonString)
@@ -49,7 +52,7 @@ object Main {
         val producer : KafkaProducer[String, String] = new KafkaProducer[String, String](props)
 
         // Import citizens'names
-        val namesFileName = "src/main/resources/name.json"
+        val namesFileName = "peacewatcher_simulator/src/main/resources/name.json"
         val fSource = Source.fromFile(namesFileName)
         val namesRaw = fSource.getLines.mkString
         fSource.close()

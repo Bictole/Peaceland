@@ -1,4 +1,4 @@
-package alert
+package alert_consumer
 
 import java.util.Properties
 import play.api.libs.json._
@@ -11,9 +11,15 @@ import org.apache.spark.streaming.kafka010.LocationStrategies._
 import org.apache.spark.streaming.{Seconds, StreamingContext}
 import org.apache.spark.SparkConf
 
+import org.apache.log4j.{Level, Logger}
+
+import data._
+
 object Main{
 
     def main(args: Array[String]): Unit = {
+        // keep only the errors
+        Logger.getLogger("org").setLevel(Level.ERROR)
 
         val sparkConf = new SparkConf()
             .setAppName("peaceland_alert")
@@ -41,27 +47,26 @@ object Main{
         props.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, "localhost:9092")
         props.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, classOf[StringSerializer])
         props.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, classOf[StringSerializer])
-        //val producer : KafkaProducer[String, String] = new KafkaProducer[String, String](props)
+        
         val sparkContext = ssc.sparkContext
         val kafkaSink = sparkContext.broadcast(KafkaSink(props))
 
         stream.flatMap(record => {
-            // Declare classes format to deserialize
-            implicit val personFormat = Json.format[Person]
-            implicit val coordsFormat = Json.format[Coords]
-            implicit val eventFormat = Json.format[Event]
             val json = Json.parse(record.value())
-            eventFormat.reads(json).asOpt
+            Event.EventFormatter.reads(json).asOpt
         }).filter(event => {
             val dangerous_persons = event.persons.filter(person => person.peacescore < 0.1)
-            //dangerous_persons.foreach(person => println(s"[ALERT] ${person.name} is dangerous with ${person.peacescore} as peacescore."))
+            dangerous_persons.foreach(person => println(s"[ALERT] ${person.name} is dangerous with ${person.peacescore} as peacescore."))
             dangerous_persons.length != 0
         }).map({event =>
-            implicit val personFormat = Json.format[Person]
-            implicit val coordsFormat = Json.format[Coords]
-            implicit val alertFormat = Json.format[Alert]
-
-            val new_alert = Alert(event.peacewatcher_id, event.timestamp, event.location, event.words, event.persons.filter(person => person.peacescore < 0.1))
+            val new_alert = Alert(
+                event.peacewatcher_id,
+                event.timestamp,
+                event.location,
+                event.words,
+                event.persons.filter(person => person.peacescore < 0.1),
+                event.battery,
+                event.temperature)
             val alertJsonString = Json.stringify(Json.toJson(new_alert))
             alertJsonString
         }).foreachRDD({ rdd =>

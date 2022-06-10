@@ -1,3 +1,5 @@
+package analytics
+
 import play.api.libs.json._
 
 import java.io.FileNotFoundException
@@ -12,6 +14,8 @@ import org.apache.spark.sql.SparkSession
 import org.apache.spark.{SparkContext, SparkConf}
 
 import org.apache.log4j.{Level, Logger}
+
+import data._
 
 
 object Main {
@@ -43,7 +47,9 @@ object Main {
             LocalDateTime.parse(obj.timestamp, DateTimeFormatter.ISO_LOCAL_DATE_TIME),
             obj.location,
             obj.words,
-            obj.persons
+            obj.persons,
+            obj.battery,
+            obj.temperature
             ))
 
         val threshold = 0.1
@@ -71,15 +77,15 @@ object Main {
         }"))
 
         println("\n\n")
-        val agitationPerPeacewatcher = obj.groupBy(x => x.peacewatcherID)
+        val agitationPerPeacewatcher = obj.groupBy(x => x.peacewatcher_id)
         println(s"Agitation per peacewatcher id:")
         agitationPerPeacewatcher.foreach(x => println(s"${x._1} : ${x._2.size}"))
 
         println("\n\n")
         val agitationPerLocation = obj.groupBy(x =>
             (
-                (x.location.latitude * 100).toInt,
-                (x.location.longitude * 100).toInt
+                (x.location.latitude),
+                (x.location.longitude)
             )
         )
         println(s"Agitation per location")
