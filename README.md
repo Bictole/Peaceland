@@ -36,16 +36,16 @@
 
 * `peacewatcher_simulator/` contains the module for the producer that generates reports and put them on the Kafka stream of peacewatcher reports
 
-### Save Aggregate
+### Archives store
 
-* `save_aggregate/` contains the module for the consumer that reads a batch of messages on the Kafka stream of peacewatcher reports, and aggregate them into a single object file, which is then put on AWS S3
+* `archives_store/` contains the module for the consumer that reads a batch of messages on the Kafka stream of peacewatcher reports, and aggregate them into a single object file, which is then put on AWS S3
 
 ## Usage
 1. Launch your **zookeeper server**
 1. Launch your **kafka server**
-1. Launch the **alert_consumer** module using `sbt run` in *alert_consumer/*
-1. Launch the **save_aggregate** module using `sbt run` in *save_aggregate/*
-1. Launch the **api_consumer** module using `/TODO\`
-1. Launch the **analytics** module using `sbt run` in *analytics/*
-1. Launch the **alert_screen** front end using `npm start` in *alert_screen/*
-1. Launch the **peacewatcher_simulator** using `sbt run` in *peacewatcher_simulator/*
+1. Launch the **alert_consumer** module using `sbt "project alert_consumer" "run"` 
+1. Launch the **archives_store** module using `sbt "project archives_store" "run"`
+1. Launch the **api_consumer** module using `npm i` to install dependencies and start in one terminal `node consumer.js` and in another `node redirect_server.js`
+1. Launch the **analytics** module using `sbt "project analytics" "run"`
+1. Launch the **alert_screen** front end using `npm i && npm start`
+1. Launch the **peacewatcher_simulator** using `sbt "peacewatcher_simulator" "run"`
