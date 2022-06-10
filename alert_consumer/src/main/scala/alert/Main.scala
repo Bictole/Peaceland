@@ -53,7 +53,7 @@ object Main{
             val json = Json.parse(record.value())
             eventFormat.reads(json).asOpt
         }).filter(event => {
-            val dangerous_persons = event.persons.filter(person => person.peacescore < 0.5)
+            val dangerous_persons = event.persons.filter(person => person.peacescore < 0.1)
             //dangerous_persons.foreach(person => println(s"[ALERT] ${person.name} is dangerous with ${person.peacescore} as peacescore."))
             dangerous_persons.length != 0
         }).map({event =>
@@ -61,7 +61,7 @@ object Main{
             implicit val coordsFormat = Json.format[Coords]
             implicit val alertFormat = Json.format[Alert]
 
-            val new_alert = Alert(event.peacewatcher_id, event.timestamp, event.location, event.words, event.persons.filter(person => person.peacescore < 0.5))
+            val new_alert = Alert(event.peacewatcher_id, event.timestamp, event.location, event.words, event.persons.filter(person => person.peacescore < 0.1))
             val alertJsonString = Json.stringify(Json.toJson(new_alert))
             alertJsonString
         }).foreachRDD({ rdd =>

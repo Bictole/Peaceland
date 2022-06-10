@@ -18,13 +18,13 @@ object Main {
         implicit val eventWrites = Json.format[Event]
 
         val size = names.value.size
-        (0 to 10).foreach((i) => {
+        (0 to 1000).foreach((i) => {
             val event = Event(
-                Random.nextInt,
+                Random.between(10000, 100000),
                 LocalDateTime.now(),
-                Coords(Random.nextDouble, Random.nextDouble),
-                List(words(Random.nextInt(words.size))),
-                (0 to Random.nextInt(5)).map(p => 
+                Coords(Random.between(-90.00, 90.00), Random.between(-90.00, 90.00)),
+                (1 to Random.between(1, 5)).map(p => words(Random.nextInt(words.size))).toList,
+                (1 to Random.between(1, 10)).map(p => 
                         Person(
                             (names.value(Random.nextInt(size)) \ "name").as[String],
                             Random.nextDouble

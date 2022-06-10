@@ -23,12 +23,16 @@ const main = async () => {
       })
       let alert = JSON.parse(message.value);
       let discordMessage = "[ALERT] - " + alert.timestamp.toString().split(".")[0] + " - PeaceWatcher_" + alert.peacewatcher_id.toString() + "\n";
-      discordMessage += "Location : (" + alert.location.latitude.toString() + ", " + alert.location.longitude.toString() + ") :\n";
-      discordMessage += "Words detected : " + alert.words.toString() + "\n";
+      discordMessage += "Location : (" + alert.location.latitude.toFixed(6).toString() + ", " + alert.location.longitude.toFixed(6).toString() + ")\n";
+      discordMessage += "Words detected : | "; 
+      for (w of alert.words) {
+        discordMessage += "\"" + w + "\"" + " | ";
+      }
+      discordMessage += "\n";
 
       discordMessage += "Dangerous Persons : \n";
       for (p of alert.persons) {
-        discordMessage += "\t=> " + p.name.toString() + " : " + p.peacescore.toString() + "\n";
+        discordMessage += "\t=> " + p.name.toString() + " : " + p.peacescore.toFixed(2).toString() + "\n";
       }
       
       discordMessage += "------------------------------------------------------------------------------------------------------------------";
