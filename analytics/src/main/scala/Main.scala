@@ -1,3 +1,5 @@
+package analytics
+
 import play.api.libs.json._
 
 import java.io.FileNotFoundException
@@ -12,6 +14,8 @@ import org.apache.spark.sql.SparkSession
 import org.apache.spark.{SparkContext, SparkConf}
 
 import org.apache.log4j.{Level, Logger}
+
+import data._
 
 
 object Main {
@@ -68,7 +72,7 @@ object Main {
         }"))
 
         println("\n\n")
-        val agitationPerPeacewatcher = obj.groupBy(x => x.peacewatcherID)
+        val agitationPerPeacewatcher = obj.groupBy(x => x.peacewatcher_id)
         println(s"Agitation per peacewatcher id:")
         agitationPerPeacewatcher.foreach(x => println(s"${x._1} : ${x._2.size}"))
 

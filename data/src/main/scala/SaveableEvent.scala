@@ -1,5 +1,6 @@
+package data
+
 import play.api.libs.json.{Json, OFormat}
-import scala.util.Try
 
 final case class SaveableEvent(
                                 peacewatcherID : Int,
@@ -10,8 +11,4 @@ final case class SaveableEvent(
                               )
 object SaveableEvent {
   implicit val SaveableEventFormatter: OFormat[SaveableEvent] = Json.format[SaveableEvent]
-
-  def apply(str: String): Option[SaveableEvent] = {
-    Try(Json.parse(str).asOpt[SaveableEvent]).getOrElse(None)
-  }
 }
