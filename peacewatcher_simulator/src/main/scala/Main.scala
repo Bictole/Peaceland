@@ -29,7 +29,9 @@ object Main {
                         Person(
                             (names.value(Random.nextInt(size)) \ "name").as[String],
                             Random.nextDouble
-                        )).toList
+                        )).toList,
+                Random.between(0, 100),
+                Random.between(-30, 50)
             )
             val eventJsonString = Json.stringify(Json.toJson(event))
             println(eventJsonString)

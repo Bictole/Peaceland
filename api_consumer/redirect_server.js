@@ -8,21 +8,18 @@ app.use(function(req, res, next) {
     next();
   });
 
-let alert = ""
-let lastalert = false
+let queue_alert = []
 
 app.get("/alert", (req, res) => {
-    if (!lastalert || alert === "") {
-        lastalert = true
-        res.send(alert)
+    if (queue_alert.length !== 0) {
+        res.send(queue_alert.pop())
     }
     res.end()
 })
 
 app.post("/alert", (req, res) => {
-    alert = req.body
-    lastalert = false
-    res.send(alert)
+    queue_alert.push(req.body)
+    res.end()
 })
 
 app.listen(4000)

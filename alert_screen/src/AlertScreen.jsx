@@ -9,8 +9,8 @@ document.latestPersonID = 0; //yes this is hacky, idgaf
 
 function addPeople2List(list, newList){
 	let output = [...list];
-	newList.map((person) =>{
-		output.push({id: document.latestPersonID++, name: person.name, peacescore: person.peacescore})
+	newList.persons.map((person) =>{
+		output.push({id: document.latestPersonID++, name: person.name, peacescore: person.peacescore.toFixed(2), location: newList.location})
 	});
 	console.log(output);
 	return output;
@@ -83,7 +83,8 @@ function AlertScreen(props) {
   			  		<Grid item lg={12} key={person.id}>
   					  	<Alert severity="warning" onClose={() => {setPeopleList(removeID(peopleList, person.id))}}>
   					  		<Typography variant="subtitle1" align="center">
-  					  			<strong>[Peaceless individual detected]</strong>  -- The citizen <strong>{person.name}</strong> has a worrying peacescore of <strong>{person.peacescore}.</strong>. 
+  					  			<strong>[Peaceless individual detected]</strong>  -- The citizen <strong>{person.name}</strong> has a worrying peacescore of <strong>{person.peacescore}.    </strong>  
+								<a href={"http://maps.google.com/maps?q=" + person.location.latitude.toFixed(6).toString() + "," + person.location.longitude.toFixed(6).toString()}>Location : ({ person.location.latitude.toFixed(6).toString()}, {person.location.longitude.toFixed(6).toString()})</a>
   					  		</Typography>
   					  	</Alert>
   				  	</Grid>

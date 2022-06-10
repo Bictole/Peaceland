@@ -47,7 +47,9 @@ object Main {
             LocalDateTime.parse(obj.timestamp, DateTimeFormatter.ISO_LOCAL_DATE_TIME),
             obj.location,
             obj.words,
-            obj.persons
+            obj.persons,
+            obj.battery,
+            obj.temperature
             ))
 
         val threshold = 0.1

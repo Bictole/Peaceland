@@ -16,7 +16,9 @@ final case class Event(
                         timestamp: LocalDateTime,
                         location: Coords,
                         words: List[String],
-                        persons: List[Person]
+                        persons: List[Person],
+                        battery: Int,
+                        temperature: Int
                     )
 object Event {
     implicit val EventFormatter: OFormat[Event] = Json.format[Event]

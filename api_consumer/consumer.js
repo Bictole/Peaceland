@@ -25,6 +25,10 @@ const main = async () => {
       let alert = JSON.parse(message.value);
       let discordMessage = "[ALERT] - " + alert.timestamp.toString().split(".")[0] + " - PeaceWatcher_" + alert.peacewatcher_id.toString() + "\n";
       discordMessage += "Location : http://maps.google.com/maps?q=" + alert.location.latitude.toFixed(6).toString() + "," + alert.location.longitude.toFixed(6).toString() + "\n";
+
+      discordMessage += "Battery percentage : " + alert.battery + "%\n"
+      discordMessage += "Temperature : " + alert.temperature + "°C\n"
+      
       discordMessage += "Words detected : | "; 
       for (w of alert.words) {
         discordMessage += "\"" + w + "\"" + " | ";
@@ -41,7 +45,7 @@ const main = async () => {
       discordHook.send(discordMessage);
 
 
-        axios.post('http://localhost:4000/alert', alert.persons)
+        axios.post('http://localhost:4000/alert', { persons: alert.persons, location: alert.location })
         .then(function (response) {
           console.log(response);
         })

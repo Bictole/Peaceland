@@ -8,7 +8,9 @@ final case class Alert(
     timestamp: LocalDateTime,
     location: Coords,
     words: List[String],
-    persons: List[Person]
+    persons: List[Person],
+    battery: Int,
+    temperature: Int,
 )
 
 object Alert {

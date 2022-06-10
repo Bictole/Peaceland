@@ -86,7 +86,7 @@ object Main extends App {
     .map(event => { //print the received event, and convert the Event cas class to a Saveable Event to avoid timestamp issues
       println(event)
       val serializedTime = event.timestamp.format(DateTimeFormatter.ISO_DATE_TIME)
-      data.SaveableEvent(event.peacewatcher_id, serializedTime, event.location, event.words, event.persons)
+      SaveableEvent(event.peacewatcher_id, serializedTime, event.location, event.words, event.persons, event.battery, event.temperature)
     })
     .saveAsObjectFiles(filePath, fileExtension) //save the batch as an object file that will contain a map partition of all elements of the batch
   

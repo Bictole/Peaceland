@@ -59,7 +59,14 @@ object Main{
             dangerous_persons.foreach(person => println(s"[ALERT] ${person.name} is dangerous with ${person.peacescore} as peacescore."))
             dangerous_persons.length != 0
         }).map({event =>
-            val new_alert = Alert(event.peacewatcher_id, event.timestamp, event.location, event.words, event.persons.filter(person => person.peacescore < 0.1))
+            val new_alert = Alert(
+                event.peacewatcher_id,
+                event.timestamp,
+                event.location,
+                event.words,
+                event.persons.filter(person => person.peacescore < 0.1),
+                event.battery,
+                event.temperature)
             val alertJsonString = Json.stringify(Json.toJson(new_alert))
             alertJsonString
         }).foreachRDD({ rdd =>
