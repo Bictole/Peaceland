@@ -1,53 +1,93 @@
 package saveaggregate
 
-//import com.amazonaws.services.s3.{AmazonS3, AmazonS3ClientBuilder}
-import org.apache.spark.sql.SparkSession
 import play.api.libs.json._
+
 import java.io.FileNotFoundException
 import java.io.IOException
+import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter 
+
 import scala.io.Source
-/*import play.api.libs.json._
+
 import org.apache.kafka.common.serialization.StringDeserializer
 import org.apache.kafka.clients.consumer.ConsumerConfig
+
+import org.apache.spark.sql.{SparkSession, DataFrame, SaveMode, Row, SQLContext}
+
+import org.apache.spark.streaming.{Seconds, StreamingContext}
 import org.apache.spark.streaming.kafka010._
 import org.apache.spark.streaming.kafka010.ConsumerStrategies.Subscribe
 import org.apache.spark.streaming.kafka010.LocationStrategies._
-import org.apache.spark.streaming.{Seconds, StreamingContext}*/
+import org.apache.spark.SparkConf
+import org.apache.spark.rdd.RDD
+import org.apache.spark.sql.Encoders
+import org.apache.spark.sql.SQLContext  
+
+import scala.reflect.ClassTag
 
 object Main extends App {
-  def putOnS3() = {
-
-      // find these info on IAM
-      val accessKey = "AKIAS5I4RNJFG2HX6DUU"
-      val secretKey = "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"
-
-      val spark: SparkSession = SparkSession.builder()
-          .master("local[*]")
-          .appName("save_aggregate")
-          .getOrCreate()
-      //spark.sparkContext.setLogLevel("ERROR")
-
-      spark.sparkContext.hadoopConfiguration.set("fs.s3a.access.key", accessKey)
-      spark.sparkContext.hadoopConfiguration.set("fs.s3a.secret.key", secretKey)
-      spark.sparkContext.hadoopConfiguration.set("fs.s3a.endpoint", "s3.amazonaws.com")
-
-      //val filePath = "/home/arcanix/Downloads/addresses.csv"
-      //val filePath = "s3a://peaceland/addresses.csv"
-      val filePath = "/home/alexandrel/Peaceland/save_aggregate/test.json"
-      val fSource = Source.fromFile(filePath)
-      val jsonRaw = fSource.getLines.mkString
-      fSource.close()
-      val df = spark.read.option("multiLine", true).json(filePath)
-      df.show(false)
-      df.write.mode("Overwrite").json("s3a://peaceland-avem/test.json")
-      val content = spark.read
-        .option("header", "true")
-        .option("inferSchema", "true")
-        .json("s3a://peaceland-avem/test.json")
-
-      content.show(5, false)
-  }
+  //access and secret key for AWS S3, found on IAM
+  val accessKey = ""
+  val secretKey = ""
   
-  putOnS3()
-  //println("Hello, World!")
+  val sparkConf = new SparkConf()
+      .setMaster("local[*]")
+      .setAppName("save_aggregate")
+      .set("spark.driver.host", "127.0.0.1")
+
+  //here Seconds(15) means that we fetch the batch every 15 secs, if we were to put it to 1 day, we'd aggregate daily
+  val streamContext = new StreamingContext(sparkConf, Seconds(15))
+  val sparkContext = streamContext.sparkContext
+  val spark: SparkSession = SparkSession.builder.config(sparkContext.getConf).getOrCreate()
+  val sqlContext = new org.apache.spark.sql.SQLContext(sparkContext)
+
+  //I'm keeping this here as a reminder of how glad I am that we're no longer using it:
+  //import sqlContext.implicits._
+
+  spark.sparkContext.setLogLevel("ERROR")
+
+  spark.sparkContext.hadoopConfiguration.set("fs.s3a.access.key", accessKey)
+  spark.sparkContext.hadoopConfiguration.set("fs.s3a.secret.key", secretKey)
+  spark.sparkContext.hadoopConfiguration.set("fs.s3a.endpoint", "s3.amazonaws.com")
+
+  val kafkaParams = Map(
+      "bootstrap.servers" -> "localhost:9092",
+      "key.deserializer" -> classOf[StringDeserializer],
+      "value.deserializer" -> classOf[StringDeserializer],
+      "group.id" -> "alert"
+  )
+  
+  val topics = Array("peaceland")
+
+  val stream = KafkaUtils.createDirectStream[String, String](
+      streamContext,
+      PreferConsistent,
+      Subscribe[String,String](topics, kafkaParams)
+  )
+
+  //path to file that we will read from and write to
+  val filePath = "s3a://arcatest0/charmander"
+  val fileExtension = ".obj"
+
+  //this is an example of how to read. it won't work cause I reached my max cap on S3.
+  val obj = sparkContext.objectFile("s3a://arcatest0/charmander-*." + fileExtension)
+  obj.foreach(println)
+
+  stream.flatMap(record => { //deserializes records into instances of Event case class
+      // Declare classes format to deserialize
+      implicit val personFormat = Json.format[Person]
+      implicit val coordsFormat = Json.format[Coords]
+      implicit val eventFormat = Json.format[Event]
+      val json = Json.parse(record.value())
+      eventFormat.reads(json).asOpt
+    })
+    .map(event => { //print the received event, and convert the Event cas class to a Saveable Event to avoid timestamp issues
+      println(event)
+      val serializedTime = event.timestamp.format(DateTimeFormatter.ISO_DATE_TIME)
+      SaveableEvent(event.peacewatcherID, serializedTime, event.location, event.words, event.persons)
+    })
+    .saveAsObjectFiles(filePath, fileExtension) //save the batch as an object file that will contain a map partition of all elements of the batch
+  
+  streamContext.start()
+  streamContext.awaitTermination()
 }
