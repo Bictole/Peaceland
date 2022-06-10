@@ -48,4 +48,4 @@
 1. Launch the **api_consumer** module using `/TODO\`
 1. Launch the **analytics** module using `sbt run` in *analytics/*
 1. Launch the **alert_screen** front end using `npm start` in *alert_screen/*
-3. Launch the **peacewatcher_simulator** using `sbt run` in *peacewatcher_simulator/*
+1. Launch the **peacewatcher_simulator** using `sbt run` in *peacewatcher_simulator/*
