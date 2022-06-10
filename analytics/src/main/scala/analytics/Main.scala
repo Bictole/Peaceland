@@ -55,5 +55,16 @@ object Main {
                     .size })
             .reduce((x, y) => x + y)
         }"))
+
+        println("\n\n")
+        val agitationPerWords = obj.groupBy(x => x.words)
+        println(s"Number of agitated person per words heard:")
+        agitationPerWords.foreach(x => println(s"${x._1} : ${x._2
+            .map(event => {
+                event.persons
+                    .filter(person => person.peacescore < 0.5)
+                    .size })
+            .reduce((x, y) => x + y)
+        }"))
     }
 }
