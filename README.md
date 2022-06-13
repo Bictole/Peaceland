@@ -1,5 +1,7 @@
 # Peaceland
 
+Peaceland is a full project made with scala, spark, kafka, node and react to design a big data architecture.
+
 ## Module List
 
 ### Root
