@@ -1,4 +1,7 @@
-# Peaceland
+# Peaceland [![Profile][title-img]][repo]
+
+[title-img]:https://img.shields.io/badge/-PeaceCorp%E2%84%A2-yellow
+[repo]:https://github.com/Bictole/Peaceland
 
 Peaceland is a full project made with scala, spark, kafka, node and react to design a big data architecture.
 
