@@ -5,6 +5,11 @@
 
 Peaceland is a full project made with scala, spark, kafka, node and react to design a big data architecture.
 
+Our choices led us to the following architecture:
+
+<img src="https://github.com/Bictole/Peaceland/blob/master/architecture_final.png"
+alt="Architecture">
+
 ## Module List
 
 ### Root
