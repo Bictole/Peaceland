@@ -59,3 +59,7 @@ alt="Architecture">
 1. Launch the **analytics** module using `sbt "project analytics" "run"`
 1. Launch the **alert_screen** front end using `npm i && npm start`
 1. Launch the **peacewatcher_simulator** using `sbt "peacewatcher_simulator" "run"`
+
+
+<img src="https://github.com/Bictole/Peaceland/blob/master/peacecorp.png"
+alt="The_Peacecorp">
